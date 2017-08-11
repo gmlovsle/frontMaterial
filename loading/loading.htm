@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<title>TweenMaxjs 结合 SVG 实现的超酷炫的加载动画效果</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/font-awesome.min.css" type="text/css" />
+<style>
+body{
+	background:#CFCFCF;
+}
+.title{
+  text-align: center;
+  padding: 20px;
+  font-weight: 800;
+}
+.send {
+	position: relative;
+	width:200px;
+	height: 200px;
+	margin: 0 auto;
+	-webkit-filter: url("#goo");
+	filter: url("../send.html#goo");
+}
+
+.send-button {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	background: #f78e42;
+	border: none;
+	border-radius: 50%;
+	width: 80px;
+	height: 80px;
+	margin-top: -40px;
+	margin-left: -40px;
+	color: #fff;
+	font-size: 30px;
+	padding: 0;
+	overflow: hidden;
+}
+
+.sent-bg{
+	background: #5af158;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+}
+
+.send-icon {
+	position: relative;
+	font-size: 28px;
+	margin: -2px 0 0 -2px;
+}
+
+.sent-icon {
+	display: none;
+}
+
+.send-indicator {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+}
+
+.send-indicator-dot {
+	position: absolute;
+	background: #5af158;
+	width: 40px;
+	height: 40px;
+	margin-left: -20px;
+	margin-top: -20px;
+	border-radius: 50%;
+}
+
+.send-indicator-dot:nth-child(1) {
+	background: #03a9f4;
+	-webkit-transform: scale(0.8, 0.8);
+	transform: scale(0.8, 0.8);
+}
+
+.send-indicator-dot:nth-child(2) {
+	background: #5af158;
+	-webkit-transform: scale(0.85, 0.85);
+	transform: scale(0.85, 0.85);
+}
+
+.send-indicator-dot:nth-child(3) {
+	background: #ffc107;
+	-webkit-transform: scale(0.9, 0.9);
+	transform: scale(0.9, 0.9);
+}
+
+.send-indicator-dot:nth-child(4) {
+	background: #ff5722;
+	-webkit-transform: scale(0.7, 0.7);
+	transform: scale(0.7, 0.7);
+}
+</style>
+</head>
+<body>
+<!-- HTML代码片段中请勿添加<body>标签 //-->
+<div id="container">
+      <div class="content">
+          <div class="title">点击按钮，查看loading动画效果</div>
+          <div class="send">
+            <div class="send-indicator">
+              <div class="send-indicator-dot"></div>
+              <div class="send-indicator-dot"></div>
+              <div class="send-indicator-dot"></div>
+              <div class="send-indicator-dot"></div>
+            </div>
+            <button class="send-button">
+              <div class="sent-bg"></div>
+              <i class="fa fa-send send-icon"></i>
+              <i class="fa fa-check sent-icon"></i>
+            </button>
+          </div>
+      </div>
+</div>
+
+
+
+<!-- 推荐开源CDN来选取需引用的外部JS //-->
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script src="js/TweenMax.min.js"></script>
+<script>
+/*Javascript代码片段*/
+$(document).ready(function(){
+	var locked=false;
+	var $sendButton=$(".send-button")
+		,$sendIcon=$(".send-icon")
+		,$sentIcon=$(".sent-icon")
+		,$sentBg=$(".sent-bg")
+		,$indicatorDots=$(".send-button,.send-indicator-dot")
+	$sendButton.click(function(event) {
+		send();
+	});
+
+	function setFilter(filter){
+		$(".send").css({
+			webkitFilter:filter,
+			mozFilter:filter,
+			filter:filter,
+		});
+	}
+	function setGoo(){
+		setFilter("url(#goo)");
+	}
+	function setGooNoComp(){
+		setFilter("url(#goo-no-comp)");
+	}
+
+	function send(){
+		if(locked) return;
+
+		locked=true;
+
+		TweenMax.to($sendIcon,0.3,{
+			x:100,
+			y:-100,
+			ease:Quad.easeIn,
+			onComplete:function(){
+				setGooNoComp();
+				$sendIcon.css({
+					display:"none"
+				});
+			}
+		});
+		TweenMax.to($sendButton,0.6,{
+			scale:0.5,
+			ease:Back.easeOut
+		});
+
+		$indicatorDots.each(function(i){
+			startCircleAnim($(this),50,0.1,1+(i*0.2),1.1+(i*0.3));
+		})
+
+
+		setTimeout(function(){
+			// success anim start
+			// close circle
+			$indicatorDots.each(function(i){
+				stopCircleAnim($(this),0.8+(i*0.1));
+			});
+			TweenMax.to($sentBg,0.7,{
+				delay:.7,
+				opacity:1
+			})
+
+			// show icon
+			setTimeout(function(){
+				setGoo();
+
+				TweenMax.fromTo($sentIcon,1.5,{
+					display:"inline-block",
+					opacity:0,
+					scale:0.1
+				},{
+					scale:1,
+					ease:Elastic.easeOut
+				});
+				TweenMax.to($sentIcon,0.5,{
+					delay:0,
+					opacity:1
+				});
+				TweenMax.to($sendButton,0.3,{
+					scale:1,
+					ease:Back.easeOut
+				});
+
+				// back to normal
+				setTimeout(function(){
+					TweenMax.to($sentBg,0.4,{
+						opacity:0
+					});
+					TweenMax.to($sentIcon,0.2,{
+						opacity:0,
+						onComplete:function(){
+							locked=false;
+							$sentIcon.css({
+								display:"none"
+							})
+							TweenMax.fromTo($sendIcon,0.2,{
+								display:"inline-block",
+								opacity:0,
+								x:0,
+								y:0
+							},{
+								opacity:1
+							});
+						}
+					});
+				},2000);
+
+			},1000);
+
+		},3000+(Math.random()*3000))
+	}
+	function setupCircle($obj){
+		if(typeof($obj.data("circle"))=="undefined"){
+			$obj.data("circle",{radius:0,angle:0});
+
+			function updateCirclePos(){
+				var circle=$obj.data("circle");
+				TweenMax.set($obj,{
+					x:Math.cos(circle.angle)*circle.radius,
+					y:Math.sin(circle.angle)*circle.radius,
+				})
+				requestAnimationFrame(updateCirclePos);
+			}
+			updateCirclePos();
+		}
+	}
+
+	function startCircleAnim($obj,radius,delay,startDuration,loopDuration){
+		setupCircle($obj);
+		$obj.data("circle").radius=0;
+		$obj.data("circle").angle=0;
+		TweenMax.to($obj.data("circle"),startDuration,{
+			delay:delay,
+			radius:radius,
+			ease:Quad.easeInOut
+		});
+		TweenMax.to($obj.data("circle"),loopDuration,{
+			delay:delay,
+			angle:Math.PI*2,
+			ease:Linear.easeNone,
+			repeat:-1
+		});
+	}
+	function stopCircleAnim($obj,duration){
+		TweenMax.to($obj.data("circle"),duration,{
+			radius:0,
+			ease:Quad.easeInOut,
+			onComplete:function(){
+				TweenMax.killTweensOf($obj.data("circle"));
+			}
+		});
+	}
+})
+</script>
+</body>
+</html>
