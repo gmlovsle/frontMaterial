@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<title>TweenMaxjs结合SVG实现的水滴粘滞分离的分享效果</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/font-awesome.min.css" type="text/css" />
+<style>
+
+body{
+	background:#CFCFCF;
+}
+.title{
+  text-align: center;
+  padding: 20px;
+  font-weight: 800;
+}
+.share {
+  max-width: 600px;
+  height: 100px;
+  margin: 0 auto;
+  -webkit-filter: url("#goo");
+  filter: url("../share.html#goo");
+  position: relative;
+}
+
+.share-button,
+.share-toggle-button {
+  position: absolute;
+  display: inline-block;
+  left: 50%;
+  top: 50%;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  line-height: 80px;
+  margin-left: -40px;
+  margin-top: -40px;
+  background: #ccc;
+  text-align: center;
+  color: #fff;
+  border: none;
+  outline: none;
+}
+
+.share-button:hover,
+.share-toggle-button:hover {
+  color: #fff;
+}
+
+.share-button {
+  font-size: 30px;
+  background: #737070;
+  -webkit-transform: scale(0.95, 0.95);
+  transform: scale(0.95, 0.95);
+  color: #222;
+}
+
+a.share-button {
+  color: #3D4444;
+}
+
+a.share-button:hover, 
+a.share-button:focus {
+  color: #dfd7d7;
+}
+
+.share-toggle-button {
+  z-index: 9;
+  background: #666;
+  font-size: 20px;
+}
+
+.share-items {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.share-item {
+  display: inline-block;
+}
+</style>
+</head>
+<body>
+<!-- HTML代码片段中请勿添加<body>标签 //-->
+<div id="container">
+    <div class="title">点击分享按钮，查看动画效果</div>
+	<div class="content">
+        <div class="share">
+          <button class="share-toggle-button">
+            <i class="share-icon fa fa-share-alt"></i>
+          </button>
+          <ul class="share-items">
+            <li class="share-item">
+              <a href="#" class="share-button">
+                <i class="share-icon fa fa-facebook"></i>
+              </a>
+            </li>
+            <li class="share-item">
+              <a href="#" class="share-button">
+                <i class="share-icon fa fa-twitter"></i>
+              </a>
+            </li>
+            <li class="share-item">
+              <a href="#" class="share-button">
+                <i class="share-icon fa fa-pinterest"></i>
+              </a>
+            </li>
+            <li class="share-item">
+              <a href="#" class="share-button">
+                <i class="share-icon fa fa-tumblr"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+    </div>
+</div>
+
+
+<!-- 推荐开源CDN来选取需引用的外部JS //-->
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script src="js/TweenMax.min.js"></script>
+
+<script>
+/*Javascript代码片段*/
+$(document).ready(function(){
+	var $shareButtons=$(".share-button")
+		,$toggleButton=$(".share-toggle-button")
+
+		,menuOpen=false
+		,buttonsNum=$shareButtons.length
+		,buttonsMid=(buttonsNum/2)
+		,spacing=75
+	;
+
+	function openShareMenu(){
+		TweenMax.to($toggleButton,0.1,{
+			scaleX:1.2,
+			scaleY:0.6,
+			ease:Quad.easeOut,
+			onComplete:function(){
+				TweenMax.to($toggleButton,.8,{
+					scale:0.6,
+					ease:Elastic.easeOut,
+					easeParams:[1.1,0.6]
+				})
+				TweenMax.to($toggleButton.children(".share-icon"),.8,{
+					scale:1.4,
+					ease:Elastic.easeOut,
+					easeParams:[1.1,0.6]
+				})
+			}
+		})
+		$shareButtons.each(function(i){
+			var $cur=$(this);
+			var pos=i-buttonsMid;
+			if(pos>=0) pos+=1;
+			var dist=Math.abs(pos);
+			$cur.css({
+				zIndex:buttonsMid-dist
+			});
+			TweenMax.to($cur,1.1*(dist),{
+				x:pos*spacing,
+				scaleY:0.6,
+				scaleX:1.1,
+				ease:Elastic.easeOut,
+				easeParams:[1.01,0.5]
+			});
+			TweenMax.to($cur,.8,{
+				delay:(0.2*(dist))-0.1,
+				scale:0.6,
+				ease:Elastic.easeOut,
+				easeParams:[1.1,0.6]
+			})
+				
+			TweenMax.fromTo($cur.children(".share-icon"),0.2,{
+				scale:0
+			},{
+				delay:(0.2*dist)-0.1,
+				scale:1,
+				ease:Quad.easeInOut
+			})
+		})
+	}
+	function closeShareMenu(){
+		TweenMax.to([$toggleButton,$toggleButton.children(".share-icon")],1.4,{
+			delay:0.1,
+			scale:1,
+			ease:Elastic.easeOut,
+			easeParams:[1.1,0.3]
+		});
+		$shareButtons.each(function(i){
+			var $cur=$(this);
+			var pos=i-buttonsMid;
+			if(pos>=0) pos+=1;
+			var dist=Math.abs(pos);
+			$cur.css({
+				zIndex:dist
+			});
+
+			TweenMax.to($cur,0.4+((buttonsMid-dist)*0.1),{
+				x:0,
+				scale:.95,
+				ease:Quad.easeInOut,
+			});
+				
+			TweenMax.to($cur.children(".share-icon"),0.2,{
+				scale:0,
+				ease:Quad.easeIn
+			});
+		})
+	}
+
+	function toggleShareMenu(){
+		menuOpen=!menuOpen
+
+		menuOpen?openShareMenu():closeShareMenu();
+	}
+	$toggleButton.on("mousedown",function(){
+		toggleShareMenu();
+	})
+	
+})
+</script>
+</body>
+</html>

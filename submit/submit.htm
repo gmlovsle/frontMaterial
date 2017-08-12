@@ -1,0 +1,123 @@
+ <!doctype html>
+<html lang="zh">
+<head>
+<title>TweenMaxjs 实现加载动画效果 </title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+button{
+
+  display:inline-block;
+  padding:10px 28px;
+  margin-top:50px;
+   margin-left:50px;
+  font-size:18px;
+  font-weight:normal;
+  text-align:center;
+  border:2px solid purple;
+  border-radius:4px;
+  color:purple;
+  background:#ffffff;
+  
+ 
+}
+button:hover{
+  color:#ffffff;
+  background:purple;
+}
+
+
+</style>
+</head>
+<body>
+<!-- HTML代码片段中请勿添加<body>标签 //-->
+<div id="container">
+	<button type="button">提交</button>
+</div>
+
+
+
+<!-- 推荐开源CDN来选取需引用的外部JS //-->
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script src="js/TweenMax.min.js"></script>
+<script>
+/*Javascript代码片段*/
+
+var loader = new loader({ colors:["#61AC27","purple","#FF6600","#555"]});
+
+$("button").click(function(){
+  $(this).hide();
+  loader.active(!loader.active());
+  setTimeout(showBtn,10000);
+});
+
+function showBtn(){
+   var active = loader.active(!loader.active());
+   if(active){
+     $("button").show();
+   }
+}
+
+function loader(options) {
+  var parent = document.body,
+      element = document.createElement("div"),
+      radius =  30,
+      size =  15,
+      offset = 1.8,  
+      create = function(rotation) {
+        var dot = document.createElement("div");
+        element.appendChild(dot);
+        TweenMax.set(dot, {width:size, height:size, transformOrigin:(-radius + "px 0px"), x: radius, backgroundColor:colors[colors.length-1], borderRadius:"50%", force3D:true, position:"absolute", rotation:rotation});
+        dot.className ="loader";
+        return dot; 
+      }, 
+      i = 10,
+      rotationIncrement = 360 / i,
+      colors =options.colors,
+      animation = new TimelineLite({paused:true}),
+      dots = [],
+      isActive = false,
+      box = document.createElement("div"),
+      tl,
+      dot,
+      closingAnimation,
+      j;
+  while (--i > -1) {
+    dot = create(i * rotationIncrement);
+    dots.unshift(dot);
+    animation.from(dot, 0.1, {scale:0.01, opacity:0, ease:Power1.easeOut}, offset);
+    tl = new TimelineMax({repeat:-1, repeatDelay:0.25});
+    for (j = 0; j < colors.length; j++) {
+      tl.to(dot, 2.5, {rotation:"-=360", ease:Power2.easeInOut}, j * 2.9)
+        .to(dot, 1.2, {skewX:"+=360", backgroundColor:colors[j], ease:Power2.easeInOut}, 1.6 + 2.9 * j);
+    } 
+ 
+ }
+ 
+ parent.appendChild(element);
+ TweenMax.set(element, {position:"fixed", top:"45%", left:"50%", perspective:600, overflow:"visible", zIndex:2000});//位置
+ 
+ //显示隐藏
+ this.active = function(show) {
+    if (!arguments.length) {
+      return isActive;
+    }
+    if (isActive != show) {
+      isActive = show;
+      if (isActive) {
+        element.style.visibility = "visible";
+        TweenLite.set([element, box], {rotation:0});
+        animation.play(offset);
+      } else {
+        closingAnimation = new TimelineLite();
+        closingAnimation.staggerTo(dots, 0.3, {scale:0.01, opacity:0, ease:Power1.easeIn, overwrite:false}, 0.05, 0).to(box, 0.4, {opacity:0, scale:0.2, ease:Power2.easeIn, overwrite:false}, 0).call(function() { animation.pause(); closingAnimation = null; }).set(element, {visibility:"hidden"});
+      }
+    }
+    return this;
+  };
+
+}
+</script>
+</body>
+</html>
